@@ -17,45 +17,53 @@ def send_pushover(message):
     })
 
 def get_weather():
-    url = f"https://api.openweathermap.org/data/2.5/onecall?lat={LAT}&lon={LON}&appid={OPENWEATHER_API_KEY}&units=imperial"
-    return requests.get(url).json()
+    url = f"https://api.openweathermap.org/data/2.5/forecast?lat={LAT}&lon={LON}&appid={OPENWEATHER_API_KEY}&units=imperial"
+    res = requests.get(url)
+    try:
+        res.raise_for_status()
+        return res.json()
+    except Exception as e:
+        send_pushover(f"💥 Weather API error: {e}")
+        return None
 
-def build_alert(d):
+def build_alert(data):
     alerts = []
-    if d['temp']['min'] < 34:
+    today = datetime.now().date()
+    day_data = [d for d in data['list'] if datetime.fromtimestamp(d['dt']).date() == today]
+
+    if not day_data:
+        return "⚠️ No weather data found for today."
+
+    temps = [d['main']['temp'] for d in day_data]
+    min_temp = min(temps)
+    max_temp = max(temps)
+    humidity = sum([d['main']['humidity'] for d in day_data]) // len(day_data)
+    wind = max([d['wind']['speed'] for d in day_data])
+    rain = sum([d.get('rain', {}).get('3h', 0) for d in day_data])
+
+    if min_temp < 34:
         alerts.append("🧊 Frost claws at the roots.")
-    if d['temp']['max'] > 95:
+    if max_temp > 95:
         alerts.append("🔥 The Grove withers in firelight.")
-    if d.get('wind_gust', 0) > 25:
+    if wind > 25:
         alerts.append("💨 Wind howls. Secure all spirits.")
-    if d.get('rain', 0) > 0.3:
+    if rain > 0.3:
         alerts.append("🌧️ The sky bleeds. Pause the flow.")
-    if d.get('humidity', 100) < 30 and d['temp']['max'] > 85:
+    if humidity < 30 and max_temp > 85:
         alerts.append("🌬️ Air runs dry. Mist the moss. Aid the clover.")
 
-    today = datetime.now()
-    if f"{today.month}-{today.day}" in ["3-20", "6-21", "9-22", "12-21"]:
-        alerts.append("🩸 The Hollow calls. Kneel beneath the branches and speak.")
+    if not alerts and datetime.now().day % 3 == 0:
+        alerts.append("🕯️ No danger today… but the trees remember.")
 
-    if not alerts and today.day % 3 == 0:
-        vibes = [
-            "🕯️ No danger today… but the trees remember.",
-            "🌑 A silence hangs. The Hollow watches.",
-            "🦴 Nothing stirs—but roots still dream.",
-            "🍃 A calm day… for now.",
-            "👁️ Something unseen stirs beneath the moss."
-        ]
-        alerts.append(vibes[today.day % len(vibes)])
-
-    forecast = f"Low: {d['temp']['min']}°F\nHigh: {d['temp']['max']}°F\nHumidity: {d['humidity']}%\nWind: {d.get('wind_gust', 0)} mph\nRain: {d.get('rain', 0)} in"
-    return "\n".join(alerts) + "\n\n🌡️ Forecast:\n" + forecast
+    forecast = f"Low: {min_temp}°F\\nHigh: {max_temp}°F\\nHumidity: {humidity}%\\nWind: {wind} mph\\nRain: {round(rain, 2)} in"
+    return "\\n".join(alerts) + "\\n\\n🌡️ Forecast:\\n" + forecast
 
 def main():
-    weather = get_weather()
-    today = weather['daily'][0]
-    msg = build_alert(today)
-    if msg:
-        send_pushover(msg)
+    data = get_weather()
+    if data:
+        msg = build_alert(data)
+        if msg:
+            send_pushover(msg)
 
 if __name__ == "__main__":
     main()
