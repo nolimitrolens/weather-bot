@@ -3,7 +3,7 @@ from datetime import datetime
 
 PUSHOVER_USER_KEY = "u8zazsfgi28saqs43i1bfsthgkrzam"
 PUSHOVER_API_TOKEN = "ab9g4rom4m29syu7oidm6patsx8rp6"
-OPENWEATHER_API_KEY = "6585880ac4cd8619d66a2237d2341623"
+OPENWEATHER_API_KEY = "8f071432812b37b94e236ef9c63b31f1"
 LAT = 38.8
 LON = -89.9
 
@@ -55,8 +55,8 @@ def build_alert(data):
     if not alerts and datetime.now().day % 3 == 0:
         alerts.append("🕯️ No danger today… but the trees remember.")
 
-    forecast = f"Low: {min_temp}°F\\nHigh: {max_temp}°F\\nHumidity: {humidity}%\\nWind: {wind} mph\\nRain: {round(rain, 2)} in"
-    return "\\n".join(alerts) + "\\n\\n🌡️ Forecast:\\n" + forecast
+    forecast = f"Low: {min_temp}°F\nHigh: {max_temp}°F\nHumidity: {humidity}%\nWind: {wind} mph\nRain: {round(rain, 2)} in"
+    return "\n".join(alerts) + "\n\n🌡️ Forecast:\n" + forecast
 
 def main():
     data = get_weather()
