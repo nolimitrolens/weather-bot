@@ -2,8 +2,8 @@ import requests
 from datetime import datetime
 
 PUSHOVER_USER_KEY = "u8zazsfgi28saqs43i1bfsthgkrzam"
-PUSHOVER_API_TOKEN = "aTKDuK2eKECqz0nGJi5hrQGypABt8M"
-OPENWEATHER_API_KEY = "8f071432812b37b94e236ef9c63b31f1"
+PUSHOVER_API_TOKEN = "ab9g4rom4m29syu7oidm6patsx8rp6"
+OPENWEATHER_API_KEY = "6585880ac4cd8619d66a2237d2341623"
 LAT = 38.8
 LON = -89.9
 
